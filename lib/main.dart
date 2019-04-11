@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      // 命名路由配置表
       routes: {
         '/firstPage': (context) => new FistPage(),
         '/secondPage': (context) => new SecondPage(),
@@ -20,20 +21,32 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Flutter的路由回退默认是保持状态的
+// 所以需要 replace 和 remove等
+
 class FistPage extends StatelessWidget {
-
-  final String args;
-  FistPage({this.args = '没参数'});
-
   @override
   Widget build(BuildContext context) {
+
+    // 一个popup
+    _doCallbackPopup (args) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(args)
+          );
+        }
+      );
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('FistPage'),
       ),
       body: Column(
         children: <Widget>[
-          Text('是否有参数： ${this.args}'),
+          Text('各种路由跳转', style: TextStyle(fontSize: 22)),
           Center(
             child: FlatButton(
               color: Colors.deepOrange,
@@ -41,7 +54,104 @@ class FistPage extends StatelessWidget {
               child: Text('带参路由 -> 去SecondPage'),
               onPressed: () {
                 Navigator.push(context, 
-                  new MaterialPageRoute(builder: (context) => new SecondPage(args: '来自FistPage的参数'))
+                  new MaterialPageRoute(
+                    // 手动路由：可以传参
+                    builder: (context) => new SecondPage(args: '来自FistPage的参数')
+                  )
+                );
+              },
+            )
+          ),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Text('命名路由 -> /secondPage'),
+              onPressed: () {
+                // 命名路由：不能传参 ？ arguments是什么？ 怎么接？
+                Navigator.pushNamed(context, '/secondPage',
+                  arguments: '命名路由的参数');
+              },
+            )
+          ),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Text('跳转 -> 监听回调'),
+              onPressed: () {
+                // Navigator都是Future对象
+                Navigator.pushNamed(context, '/secondPage')
+                  .then((res) { // 路由pop后的回调函数
+                    _doCallbackPopup(res);
+                  });
+              },
+            )
+          ),
+          Text('各种路由动画', style: TextStyle(fontSize: 22)),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Text('Slide路由动画'),
+              onPressed: () {
+                Navigator.push(context,
+                  // 启用动画路由，在回退时也有效
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500), //动画时间为500毫秒
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                        return new SlideTransition( // 移动动画
+                          textDirection: TextDirection.ltr,
+                          position: Tween(
+                            begin: Offset(1.0, 1.0), // 1.0表示100%宽/高
+                            end: Offset.zero
+                          ).animate(animation),
+                          child: SecondPage()
+                        );
+                      }
+                  )
+                );
+              },
+            )
+          ),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Text('Scale路由动画'),
+              onPressed: () {
+                Navigator.push(context,
+                  // 启用动画路由，在回退时也有效
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500), //动画时间为500毫秒
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                        return new ScaleTransition( // 移动动画
+                          scale: animation,
+                          child: SecondPage()
+                        );
+                      }
+                  )
+                );
+              },
+            )
+          ),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Text('Fade路由动画'),
+              onPressed: () {
+                Navigator.push(context,
+                  // 启用动画路由，在回退时也有效
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500), //动画时间为500毫秒
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                        return new FadeTransition( // 移动动画
+                          opacity: animation,
+                          child: SecondPage()
+                        );
+                      }
+                  )
                 );
               },
             )
@@ -55,26 +165,27 @@ class FistPage extends StatelessWidget {
 class SecondPage extends StatelessWidget{
 
   final String args;
-  SecondPage({this.args = '没参数'});
+  final Object arguments;
+  SecondPage({this.args = '没参数', this.arguments = 'as'});
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('SecondPage'),
       ),
       body: Column(
         children: <Widget>[
-          Text('是否有参数： ${this.args}'),
+          Text('${this.args}', style: TextStyle(fontSize: 22)),
           Center(
             child: FlatButton(
               color: Colors.pink,
               textColor: Colors.white,
-              child: Text('带参路由 -> 去FistPage'),
+              child: Text('回退'),
               onPressed: () {
-                Navigator.push(context, 
-                  new MaterialPageRoute(builder: (context) => new FistPage(args: '来自SecondPage的参数'))
-                );
+                // 路由回退操作
+                Navigator.pop(context, '来自回退的参数');
               },
             )
           )
