@@ -155,7 +155,32 @@ class FistPage extends StatelessWidget {
                 );
               },
             )
-          )
+          ),
+          Center(
+            child: FlatButton(
+              color: Colors.deepOrange,
+              textColor: Colors.white,
+              child: Hero(
+                tag: 'zmz',
+                child: Text('默认Hero动画路由'),
+              ),
+              onPressed: () {
+                Navigator.push(context,
+                  // 启用动画路由，在回退时也有效
+                  PageRouteBuilder(
+                    transitionDuration: Duration(milliseconds: 500), //动画时间为500毫秒
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                        return new FadeTransition( // 移动动画
+                          opacity: animation,
+                          child: ThirdPage()
+                        );
+                      }
+                  )
+                );
+              },
+            )
+          ),
+          MyLoadingDialog(text: '疯狂输出',)
         ]
       )
     );
@@ -165,12 +190,10 @@ class FistPage extends StatelessWidget {
 class SecondPage extends StatelessWidget{
 
   final String args;
-  final Object arguments;
-  SecondPage({this.args = '没参数', this.arguments = 'as'});
+  SecondPage({this.args = '没参数'});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('SecondPage'),
@@ -191,6 +214,61 @@ class SecondPage extends StatelessWidget{
           )
         ],
       )
+    );
+  }
+}
+
+class ThirdPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('ThirdPage'),
+      ),
+      body: Hero(
+        tag: 'zmz',
+        child: Center(
+          child: Text('这里是ThirdPage'),
+        )
+      )
+    );
+  }
+}
+
+class MyLoadingDialog extends Dialog {
+
+  final String text;
+  MyLoadingDialog({Key key, @required this.text}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return new Material( //创建透明层
+      type: MaterialType.transparency, //透明类型
+      child: new Center( //保证控件居中效果
+        child: new Container(
+          width: 120.0,
+          height: 120.0,
+          decoration: ShapeDecoration(
+            color: Color(0xffffffff),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(8.0),
+              ),
+            ),
+          ),
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              new CircularProgressIndicator(), // 圆形指示符
+              new Padding(
+                padding: const EdgeInsets.only(top: 20.0,),
+                child: new Text(text),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
